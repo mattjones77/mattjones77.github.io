@@ -1,9 +1,7 @@
-const { ENGINE_METHOD_ALL } = require("constants")
-
 document.addEventListener('DOMContentLoaded', () => {
 
-    //card options
-    const cardArray = [
+//cards
+const cardArray = [
         {
             name: 'flamebreast',
             img: 'images/flamebreast.png'
@@ -49,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
             img: 'images/hummingbird.png'
         },
     ]
-})
+
 
 const grid = document.querySelector('.grid')
 
@@ -66,3 +64,6 @@ function  createBoard() {
 }
 
 createBoard()
+
+
+})
