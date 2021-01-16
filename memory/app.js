@@ -46,6 +46,10 @@ document.addEventListener('DOMContentLoaded', () => {
             name: 'hummingbird',
             img: 'images/hummingbird.png'
         },
+        {
+            name: 'hummingbird',
+            img: 'images/hummingbird.png'
+        },
     ]
 
     cardArray.sort(() => 0.5 - Math.random())
@@ -93,10 +97,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //flip card
     function flipCard() {
-        console.log("yes")
         var cardId = this.getAttribute('data-id')
-        cardsChosen.push(cardArray[cardId].name)
+        var cardName =  cardArray[cardId].name 
+        if ((cardsChosen.length > 0 && cardsChosenID[0] === cardId)
+                || this.getAttribute('src') === 'images/white.png' ){
+                return
+        }
+        cardsChosen.push(cardName)
         cardsChosenID.push(cardId)
+      
         this.setAttribute('src', cardArray[cardId].img)
         if (cardsChosen.length === 2) {
             setTimeout(checkForMatch, 500)
