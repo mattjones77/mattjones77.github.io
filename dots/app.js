@@ -2,7 +2,7 @@
 
 const DELAY_END = 2; // Seconds until game starts
 const FPS = 30;
-const GRID_SIZE = 2; //number of rows and columns
+const GRID_SIZE = 5; //number of rows and columns
 const HEIGHT = 550; // pixels
 
 // Derived Dimensions
