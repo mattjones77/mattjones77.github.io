@@ -43,7 +43,7 @@ const Side = {
 
 
 // Game Canvas
-var canv = document.createElement("canvas");
+var canv = document.getElementById('canvas');
 canv.height = HEIGHT;
 canv.width = WIDTH;
 document.body.appendChild(canv);
