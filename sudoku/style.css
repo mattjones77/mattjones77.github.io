@@ -1,0 +1,13 @@
+#canvas {
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin:auto;
+}
+
+.w3-light-grey,.w3-hover-light-grey:hover,.w3-light-gray,.w3-hover-light-gray:hover{
+    color:#000!important;
+    background-color:#f1f1f1!important;
+}
