@@ -7,10 +7,11 @@ const GRID_SIZE = 9; // Number of cells
 // Derived Dimensions
 const WIDTH = HEIGHT;
 const CELL_SQUARE = WIDTH / 9; // size of squares
-const STROKE = CELL_SQUARE / 24; // stroke width
+const STROKE = CELL_SQUARE / 96; // stroke width
 const CELL_WIDTH = CELL_SQUARE * 3; // width of 9x9 cell
-// Colors
 
+
+// Colors
 const COLOR_BOARD = "white";
 const COLOR_BORDER = "black";
 const COLOR_DOT = "sienna";
@@ -36,7 +37,7 @@ ctx.textBaseline = "middle";
 // Variables
 
 // Start a new game
-newGame();
+newGame(null);
 
 // Event handlers
 
@@ -108,36 +109,6 @@ function drawLine(x0, y0, x1, y1, color) {
   ctx.stroke();
 }
 
-// function drawScores() {
-//     let colComp = playersTurn ? COLOR_COMP_LIT : COLOR_COMP;
-//     let colPlay = playersTurn ? COLOR_PLAY : COLOR_PLAY_LIT;
-//     drawText(TEXT_PLAY, WIDTH * 0.25, MARGIN * 0.25, colPlay, TEXT_SIZE_TOP);
-//     drawText(scorePlay, WIDTH * 0.25, MARGIN * 0.6, colPlay, TEXT_SIZE_TOP * 2);
-//     drawText(TEXT_COMP, WIDTH * 0.75, MARGIN * 0.25, colComp, TEXT_SIZE_TOP);
-//     drawText(scoreComp, WIDTH * 0.75, MARGIN * 0.6, colComp, TEXT_SIZE_TOP * 2);
-
-//     // gameover text
-//     if (timeEnd > 0) {
-//         timeEnd--;
-
-//         // handle a tie
-//         if (scoreComp == scorePlay) {
-//             drawText(TEXT_TIE, WIDTH * 0.5, MARGIN * 0.6, COLOR_TIE, TEXT_SIZE_TOP);
-//         } else {
-//             let playerWins = scorePlay > scoreComp;
-//             let color = playerWins ? COLOR_PLAY : COLOR_COMP;
-//             let player = playerWins ? TEXT_PLAY : TEXT_COMP;
-//             drawText(player, WIDTH * 0.5, MARGIN * 0.5, color, TEXT_SIZE_TOP);
-//             drawText(TEXT_WIN, WIDTH * 0.5, MARGIN * 0.7, color, TEXT_SIZE_TOP);
-//         }
-
-//         // new game
-//         if (timeEnd == 0) {
-//             newGame();
-//         }
-//     }
-
-// }
 
 function drawSquares() {
   for (let row of squares) {
@@ -210,7 +181,7 @@ function highlightSquare(x, y) {
 
   OUTER: for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
-      if (squares[i][j].contains(x, y)) {
+      if ( squares[i][j].contains(x, y)) {
         squares[i][j].highlight = true;
         break OUTER;
       }
@@ -222,9 +193,9 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
 }
 
-function newGame() {
+function newGame(game) {
   squares = [];
-  sudoku = newSudoku();
+  sudoku = newSudoku(game);
   for (let i = 0; i < GRID_SIZE; i++) {
     squares[i] = [];
     for (let j = 0; j < GRID_SIZE; j++) {
@@ -234,19 +205,53 @@ function newGame() {
         CELL_SQUARE,
         CELL_SQUARE,
         sudoku.get(i, j)
-      );
+      )
+      
+      squares[i][j].clicked = true;
     }
   }
 }
 
+// File Load
+
+let input = document.querySelector('input');
+
+
+input.addEventListener('change', () => { 
+  let files = input.files; 
+
+  if (files.length == 0) return; 
+ 
+  const file = files[0]; 
+
+  let reader = new FileReader(); 
+
+  reader.onload = (e) => { 
+      const file = e.target.result; 
+      const lines = file.split(/\r\n|\n/); 
+      console.log(lines.join('\n')); 
+      newGame(lines);
+
+  }; 
+
+  reader.onerror = (e) => alert(e.target.error.name); 
+
+  reader.readAsText(file); 
+}); 
+
 // set up sudoku numbers
 
-function newSudoku() {
+function newSudoku(game) {
   arr = [];
   for (let i = 0; i < GRID_SIZE; i++) {
     arr[i] = [];
     for (let j = 0; j < GRID_SIZE; j++) {
-      arr[i][j] = getRandomInt(9);
+      if (game === null){
+        arr[i][j] = getRandomInt(9);
+      }
+      else {
+        arr[i][j] = game[i][j];
+      }
     }
   }
   return new Sudoku(arr);
@@ -261,22 +266,34 @@ function Sudoku(arr) {
 
   this.checkMatches = function (rowNum, colNum, num) {
     // checks a column for matches
-    console.log("----- CHECKING ROWS -----");
+    console.log("----- CHECKING ROW -----");
     for (let i = 0; i < 9; i++) {
       console.log(arr[i][rowNum]);
       if (arr[i][rowNum] == num && i != rowNum) {
-        console.log(true);
+        return true;
       }
     }
     // checks a row for matches
-    console.log("----- CHECKING COLS -----");
+    console.log("----- CHECKING COL -----");
     for (let j = 0; j < 9; j++) {
       console.log(arr[colNum][j]);
       if (arr[colNum][j] == num && j != colNum) {
-        console.log(true);
+        return true;
       }
     }
-    return false; // no match
+
+     // checks a cell for matches
+     console.log("----- CHECKING CELL -----");
+     for (let k = 0; k < 3; k++) {
+      for (let l = 0; l < 3; l++ ){
+        //  colNum - (colNum % 3) + k, rowNum - (rowNum % 3) + l); The magic code
+         console.log(arr[colNum - (colNum % 3) + k][ rowNum - (rowNum % 3) + l]);
+         if (arr[colNum - (colNum % 3) + k][ rowNum - (rowNum % 3) + l] == num && k != colNum && l != rowNum) {
+         return true;
+         }
+      }
+     }
+  return false; // no match
   };
 }
 
@@ -294,12 +311,40 @@ function Square(x, y, w, h, num) {
   this.clicked = false;
 
   this.contains = function (x, y) {
-    return x >= this.left && x < this.right && y >= this.top && y < this.bot;
+    if (x >= this.left && x < this.right && y >= this.top && y < this.bot){
+      if (!this.clicked) {this.num = this.getSmall(x, y);}
+      return true
+  };
   };
 
+  this.getSmall = function(x, y) {
+    if (y < this.h/3 + this.top){
+      if( x < this.w/3 + this.left){
+        return 1;
+      } else if (x < (this.w/3 * 2) + this.left) {
+        return 2;
+      } else return 3;
+
+    } else  if (y < (this.h/3 * 2) + this.top){
+      if( x < this.w/3 + this.left){
+        return 4;
+      } else if (x < (this.w/3 * 2) + this.left) {
+        return 5;
+      } else return 6;
+
+    } else{
+      if( x < this.w/3 + this.left){
+        return 7;
+      } else if (x < (this.w/3 * 2) + this.left) {
+        return 8;
+      } else return 9;
+  }
+};
+
+
   this.drawFill = function () {
-    // light background
-    let color = this.highlight ? "lightgreen" : "lightgray";
+    let color = this.highlight ? "lightgreen" : "ivory";
+
     ctx.fillStyle = color;
     ctx.fillRect(
       this.left + STROKE,
@@ -308,15 +353,32 @@ function Square(x, y, w, h, num) {
       this.h - STROKE * 2
     );
 
-    if (this.clicked) {
-      // draw numbers
-      drawText(
-        this.num,
-        this.left + this.w / 2,
-        this.top + this.h / 2,
-        "black",
-        27
-      );
-    }
+    // if (this.highlight && !this.clicked) {
+    //   // draw numbers
+    //   drawText(
+    //     this.num,
+    //     this.left + this.w / 2,
+    //     this.top + this.h / 2,
+    //     "grey",
+    //     30
+    //   );
+    // }
+    // if (this.clicked) {
+    //   // draw numbers
+    //   drawText(
+    //     this.num,
+    //     this.left + this.w / 2,
+    //     this.top + this.h / 2,
+    //     "black",
+    //     30
+    //   );
+    // }
+    drawText(
+      this.num,
+      this.left + this.w / 2,
+      this.top + this.h / 2,
+      "black",
+      30
+    );
   };
 }
